@@ -1,0 +1,192 @@
+<!-- 文件路径: src/pages/browser/browser.ux (釜底抽薪版 - 弃用List) -->
+<template>
+  <div class="container">
+    <div class="header">
+      <div class="back-button" onclick="goBack">
+        <text class="back-arrow">←</text>
+        <text class="back-text">返回</text>
+      </div>
+      <text class="title">{{ searchText || '搜索中...' }}</text>
+    </div>
+    <div class="content-area">
+      <!-- 关键修改：用 div 替代 list -->
+      <div class="result-list-div" if="{{ !loading && results.length > 0 }}">
+        <!-- 关键修改：直接用 for 循环渲染 div -->
+        <div class="result-item" for="{{results}}">
+          <text class="result-title">{{$item.title}}</text>
+          <text class="result-url">{{$item.url}}</text>
+          <text class="result-desc">{{$item.desc}}</text>
+        </div>
+      </div>
+      <div class="status-container" if="{{loading}}">
+        <text class="status-text">Tecko 正在解析中...</text>
+      </div>
+      <div class="status-container" if="{{!loading && results.length === 0}}">
+        <text class="status-text">未找到相关结果</text>
+      </div>
+    </div>
+  </div>
+</template>
+<style>
+  .container { width: 466px; height: 466px; flex-direction: column; background-color: #000000; }
+  .header { width: 466px; height: 100px; flex-direction: column; align-items: center; justify-content: center; position: absolute; top: 0px; left: 0px; border-bottom: 1px solid #333333; z-index: 10; }
+  .back-button { flex-direction: row; align-items: center; padding: 6px 12px; background-color: #333333; border-radius: 20px; margin-bottom: 8px; }
+  .back-arrow { font-size: 16px; color: #FFFFFF; margin-right: 5px; }
+  .back-text { font-size: 14px; color: #FFFFFF; }
+  .title { font-size: 20px; color: #FFFFFF; font-weight: 700; max-width: 380px; lines: 1; text-overflow: ellipsis; }
+  .content-area { width: 466px; height: 366px; position: absolute; top: 100px; left: 0px; background-color: #000000; }
+  /* 关键修改：让 div 能够滚动 */
+  .result-list-div { width: 100%; height: 100%; flex-direction: column; overflow: scroll; }
+  .result-item { width: 100%; padding: 20px 30px; border-bottom: 1px solid #333333; flex-direction: column; box-sizing: border-box; }
+  .result-title { font-size: 18px; color: #70CEFE; margin-bottom: 8px; lines: 1; text-overflow: ellipsis; font-weight: 700; }
+  .result-url { font-size: 14px; color: #888888; margin-bottom: 10px; lines: 1; text-overflow: ellipsis; }
+  .result-desc { font-size: 16px; color: #DDDDDD; lines: 2; text-overflow: ellipsis; line-height: 22px; }
+  .status-container { width: 100%; height: 100%; justify-content: center; align-items: center; }
+  .status-text { font-size: 18px; color: #888888; }
+</style>
+<script>
+  // Script 部分完全使用我们之前确认可以解析出5条数据的版本
+  // (包含 setTimeout 的版本)
+  import router from '@system.router';
+  import fetch from '@system.fetch';
+
+  function Tecko(html, engine = 'Baidu') {
+    console.log(`[探针1] Tecko 开始解析 [${engine}] 的数据，HTML长度: ${html.length}`);
+    try {
+      switch (engine) {
+        case 'Baidu': return parseBaiduMobile(html);
+        case 'Bing': return parseBingMobile(html);
+        case 'Google':
+        case 'Sogou':
+          return [{ title: '适配中', url: '该搜索引擎的移动端页面正在适配', desc: '请暂时使用百度或必应进行搜索。' }];
+        default: return parseBaiduMobile(html);
+      }
+    } catch (error) {
+      console.error(`Tecko 在解析 [${engine}] 时发生致命错误:`, error);
+      return [{ title: 'Tecko 解析引擎崩溃', url: '无法处理返回的数据', desc: `解析过程中发生意外错误: ${error.message}` }];
+    }
+  }
+  function parseBaiduMobile(html) {
+    const results = [];
+    const resultBlocks = html.split('class="c-result ');
+    if (resultBlocks.length > 1) resultBlocks.shift();
+    for (const block of resultBlocks) {
+      try {
+        const titleMatch = block.match(/<h3[^>]*>.*?<a[^>]*?href="([^"]*)"[^>]*?>(.*?)<\/a>.*?<\/h3>/s);
+        if (!titleMatch) continue;
+        let url = titleMatch[1];
+        if (url.startsWith('/')) { url = 'https://www.baidu.com' + url; }
+        const title = titleMatch[2].replace(/<[^>]*>/g, ''  );
+        const descMatch = block.match(/class="c-abstract[^"]*">(.*?)<\/div>/s) || block.match(/class="c-line-clamp[^"]*">(.*?)<\/span>/s);
+        let desc = '暂无描述';
+        if (descMatch) { desc = descMatch[1].replace(/<[^>]*>/g, ''); }
+        if (title && url) {
+          results.push({ title: title.trim(), url: url.trim(), desc: desc.trim() });
+        }
+      } catch (e) { console.error("解析单个百度移动端结果块时出错:", e); continue; }
+    }
+    return results;
+  }
+  function parseBingMobile(html) {
+    const results = [];
+    const potentialBlocks = html.match(/<li(.*?)<\/li>/gs);
+    if (!potentialBlocks || potentialBlocks.length === 0) {
+      console.log(`[探针2-Bing] 页面中未找到任何 <li> 块。`);
+      return [];
+    }
+    console.log(`[探针2-Bing] 找到 ${potentialBlocks.length} 个潜在的 <li> 块。`);
+    for (const block of potentialBlocks) {
+      try {
+        const titleMatch = block.match(/<a href="([^"]+)"[^>]*>(.*?)<\/a>/s);
+        if (!titleMatch) continue;
+        const url = titleMatch[1];
+        let title = titleMatch[2].replace(/<[^>]*>/g, '').trim();
+        const isReasonableTitle = /[\u4e00-\u9fa5]{2,}|[a-zA-Z]{5,}/.test(title);
+        const isExternalLink = url.startsWith('http' ) && !url.includes('bing.com') && !url.includes('microsoft.com');
+        if (isReasonableTitle && isExternalLink) {
+          let desc = '暂无描述';
+          const descMatch = block.match(/<p[^>]*>(.*?)<\/p>/s);
+          if (descMatch && descMatch[1]) {
+            desc = descMatch[1].replace(/<[^>]*>/g, '').trim();
+          }
+          results.push({ title: title, url: url, desc: desc });
+        }
+      } catch (e) {
+        console.error("解析单个必应结果块时出错:", e);
+        continue;
+      }
+    }
+    console.log(`[探针4-Bing] 通过通用逻辑，成功解析出 ${results.length} 条结果。`);
+    return results;
+  }
+
+  export default {
+    data: {
+      searchText: '',
+      results: [],
+      loading: true
+    },
+    onShow() {
+      if (this.searchText) {
+        this.fetchSearchResults(this.searchText);
+      } else {
+        this.loading = false;
+        this.results = [{ title: '参数传递失败', url: '无法获取搜索关键词', desc: '未能从主页获取到您要搜索的内容，请返回重试。' }];
+      }
+    },
+    fetchSearchResults(query) {
+      this.loading = true;
+      const storage = require('@system.storage');
+      storage.get({
+        key: 'selected_engine',
+        success: (data) => {
+          const engine = (data && typeof data === 'string') ? data : 'Baidu';
+          this.performSearch(query, engine);
+        },
+        fail: () => { this.performSearch(query, 'Baidu'); }
+      });
+    },
+    performSearch(query, engine) {
+      const searchUrl = this.buildSearchUrl(query, engine);
+      fetch.fetch({
+        url: searchUrl,
+        header: {
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Mobile Safari/537.36'
+        },
+        success: (response) => {
+          this.parseSearchResults(response.data, engine);
+        },
+        fail: (error, code) => {
+          this.loading = false;
+          this.results = [{ title: '网络请求失败', url: `错误码: ${code}`, desc: `无法从服务器获取搜索结果，请检查网络连接或权限配置。错误详情: ${error}` }];
+        }
+      });
+    },
+    buildSearchUrl(query, engine) {
+      const encodedQuery = encodeURIComponent(query);
+      switch(engine) {
+        case 'Baidu': return `https://www.baidu.com/s?wd=${encodedQuery}`;
+        case 'Bing': return `https://www.bing.com/search?q=${encodedQuery}`;
+        case 'Google': return `https://www.google.com/search?q=${encodedQuery}`;
+        case 'Sogou': return `https://www.sogou.com/web?query=${encodedQuery}`;
+        default: return `https://www.baidu.com/s?wd=${encodedQuery}`;
+      }
+    },
+    parseSearchResults(data, engine  ) {
+      try {
+        const parsedResults = Tecko(data, engine);
+        setTimeout(() => {
+          this.results = JSON.parse(JSON.stringify(parsedResults));
+          this.loading = false;
+        }, 0);
+      } catch (error) {
+        console.error('解析失败:', error);
+        this.results = [];
+        this.loading = false;
+      }
+    },
+    goBack() {
+      router.back();
+    }
+  }
+</script>

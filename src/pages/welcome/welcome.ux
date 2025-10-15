@@ -1,0 +1,305 @@
+<!-- 文件路径: src/pages/welcome/welcome.ux (已优化) -->
+<template>
+  <div class="container">
+    <!-- 步骤1：欢迎标语 (currentStep: 0) -->
+    <div class="step" if="{{currentStep === 0}}">
+      <div class="background"></div>
+      <div class="content">
+        <text class="main-text">欢迎您，勇士！</text>
+        <div class="button-container">
+          <div class="continue-button" onclick="handleNextStep">
+            <text class="button-text">点按以继续</text>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 步骤2：感谢选择 (currentStep: 1) -->
+    <div class="step" if="{{currentStep === 1}}">
+      <div class="background"></div>
+      <div class="content">
+        <text class="thank-text">感谢您选择</text>
+        <text class="brand-text">HyperSurf 先行预览版</text>
+        <div class="button-container">
+          <div class="continue-button" onclick="handleNextStep">
+            <text class="button-text">点按以继续</text>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 步骤3 (原步骤4)：协议阅读 (currentStep: 2) -->
+    <div class="step" if="{{currentStep === 2}}">
+      <div class="background"></div>
+      <div class="content-step4">
+        <text class="main-text">请先阅读协议</text>
+        <div class="protocol-links">
+          <text class="protocol-link" onclick="openAppProtocol">《HyperSurf软件协议》</text>
+          <text class="protocol-link" onclick="openZendesProtocol">《镇得斯工作室用户协议》</text>
+        </div>
+        <div class="agreement-row" onclick="toggleAgreement">
+          <div class="checkbox {{agreed ? 'checked' : ''}}">
+            <text class="checkmark" if="{{agreed}}">✓</text>
+          </div>
+          <text class="agreement-text">我已经阅读上述协议</text>
+        </div>
+      </div>
+      <div class="button-container">
+        <div class="next-button {{agreed ? 'active' : 'disabled'}}" onclick="handleNextStep" if="{{agreed}}">
+          <text class="button-text">下一步</text>
+        </div>
+        <div class="next-button disabled" if="{{!agreed}}">
+          <text class="button-text">下一步</text>
+        </div>
+      </div>
+    </div>
+
+    <!-- 步骤4 (原步骤5)：反馈信息 (currentStep: 3) -->
+    <div class="step" if="{{currentStep === 3}}">
+      <div class="background"></div>
+      <div class="content">
+        <text class="main-text">欢迎反馈</text>
+        <text class="info-line">GitHub仓库提交issue</text>
+        <text class="info-line">反馈群：1034660198</text>
+        <div class="button-container">
+          <div class="continue-button" onclick="handleNextStep">
+            <text class="button-text">点按以继续</text>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 步骤5 (原步骤6)：准备就绪 (currentStep: 4) -->
+    <div class="step" if="{{currentStep === 4}}">
+      <div class="background"></div>
+      <div class="content">
+        <text class="main-text">HyperSurf 先行预览版</text>
+        <text class="ready-text">已经准备好了</text>
+        <div class="button-container">
+          <div class="start-button" onclick="startUsing">
+            <text class="button-text">开始使用</text>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.container {
+  width: 466px;
+  height: 466px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-color: #000000;
+}
+
+.step {
+  width: 466px;
+  height: 466px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+.background {
+  width: 466px;
+  height: 466px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background: linear-gradient(135deg, #0A0A0A 0%, #000000 100%);
+  border-radius: 233px;
+}
+
+.content {
+  width: 400px;
+  height: 400px;
+  position: absolute;
+  top: 33px;
+  left: 33px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 协议页专用内容区域 - 增加顶部内边距以实现下移 */
+.content-step4 {
+  width: 400px;
+  height: 350px; 
+  position: absolute;
+  top: 31px;
+  left: 33px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  /* 关键修改：从20px增加到35px，实现内容下移15px */
+  padding-top: 35px; 
+}
+
+/* 统一按钮容器 */
+.button-container {
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 50px;
+}
+
+/* 统一按钮样式 */
+.continue-button, .next-button, .start-button {
+  width: 200px;
+  height: 50px;
+  border-radius: 25px;
+  justify-content: center;
+  align-items: center;
+}
+
+.continue-button, .next-button.active, .start-button {
+  background-color: #70CEFE;
+}
+
+.next-button {
+  background-color: #333333;
+}
+
+.next-button.disabled {
+  background-color: #222222;
+}
+
+/* 统一按钮文字 */
+.button-text {
+  font-size: 18px;
+  color: #FFFFFF;
+  font-weight: 700;
+  lines: 1;
+}
+
+.next-button.disabled .button-text {
+  color: #ffffff;
+}
+
+/* 主标题 - 加粗，白色 */
+.main-text {
+  font-size: 36px;
+  color: #FFFFFF;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 30px;
+  lines: 1;
+}
+
+/* 感谢文字 - 白色，加大 */
+.thank-text {
+  font-size: 24px;
+  color: #FFFFFF;
+  text-align: center;
+  margin-bottom: 15px;
+  lines: 1;
+  font-weight: 400;
+}
+
+/* 品牌文字 - 新主题色 */
+.brand-text {
+  font-size: 28px;
+  color: #70CEFE;
+  text-align: center;
+  margin-bottom: 30px;
+  lines: 1;
+  font-weight: 700;
+}
+
+/* 副标题 - 正常粗细，浅灰色 */
+.sub-text {
+  font-size: 22px;
+  color: #CCCCCC;
+  text-align: center;
+  margin-bottom: 30px;
+  lines: 1;
+  font-weight: 400;
+}
+
+/* 协议页的特殊样式 - 缩小间距 */
+.protocol-links {
+  width: 350px;
+  align-items: center;
+  margin: 15px 0;
+  flex-direction: column;
+}
+
+/* 协议链接 - 正常粗细，新主题色，垂直排列 */
+.protocol-link {
+  font-size: 16px;
+  color: #70CEFE;
+  text-align: center;
+  margin: 6px 0;
+  text-decoration: underline;
+  lines: 1;
+  font-weight: 400;
+}
+
+.agreement-row {
+  flex-direction: row;
+  align-items: center;
+  margin: 20px 0;
+}
+
+/* 复选框 - 未选中时为黑色，选中时为新主题色 */
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #333333;
+  border-radius: 4px;
+  margin-right: 12px;
+  justify-content: center;
+  align-items: center;
+  background-color: #000000;
+}
+
+.checkbox.checked {
+  background-color: #70CEFE;
+  border-color: #70CEFE;
+}
+
+/* 对勾标记 - 加粗，白色 */
+.checkmark {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* 协议文本 - 正常粗细，白色 */
+.agreement-text {
+  font-size: 16px;
+  color: #FFFFFF;
+  lines: 1;
+  font-weight: 400;
+}
+
+/* 步骤5的信息行 - 正常粗细，浅灰色 */
+.info-line {
+  font-size: 16px;
+  color: #CCCCCC;
+  text-align: center;
+  margin: 10px 0;
+  lines: 1;
+  font-weight: 400;
+}
+
+/* 准备就绪文字 - 正常粗细，浅灰色 */
+.ready-text {
+  font-size: 20px;
+  color: #CCCCCC;
+  text-align: center;
+  margin: 25px 0;
+  lines: 1;
+  font-weight: 400;
+}
+</style>
+
+<script>
+// 关键修改：确保引用的是更新后的JS文件
+import welcome from './welcome.js'
+export default welcome
+</script>

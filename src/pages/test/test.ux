@@ -1,0 +1,139 @@
+<!-- src/pages/index/index.ux -->
+<import name="comp-input-method" src="../../components/InputMethod/InputMethod.ux"></import>
+
+<template>
+  <div class="page-container">
+    <!-- 按钮容器 -->
+    <div class="button-group">
+      <!-- 一个巨大的按钮，用于呼出输入法 -->
+      <div class="test-button show-button" onclick="showKeyboard">
+        <text class="button-text">呼出输入法</text>
+      </div>
+      <!-- 【新增】一个用于隐藏输入法的按钮 -->
+      <div class="test-button hide-button" onclick="hideKeyboard">
+        <text class="button-text">隐藏输入法</text>
+      </div>
+    </div>
+
+    <!-- 显示输入结果的文本区域 -->
+    <div class="output-container">
+      <text class="output-label">输入内容:</text>
+      <text class="output-text">{{ inputText || '暂无输入' }}_</text>
+    </div>
+
+    <!-- 输入法组件，根据 isKeyboardHidden 的值来决定是否渲染 -->
+    <comp-input-method
+      if="{{ !isKeyboardHidden }}"
+      hide="{{ isKeyboardHidden }}"
+      keyboardtype="QWERTY"
+      maxlength="5"
+      vibratemode="short"
+      oncomplete="onInputComplete"
+      ondelete="onInputDelete"
+    ></comp-input-method>
+  </div>
+</template>
+
+<style>
+  .page-container {
+    width: 466px;
+    height: 466px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #1d1d1d;
+  }
+
+  /* 【新增】按钮组容器 */
+  .button-group {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    margin-bottom: 40px;
+  }
+
+  .test-button {
+    width: 180px; /* 调整宽度以并排显示 */
+    height: 70px;
+    border-radius: 35px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .show-button {
+    background-color: #007aff;
+  }
+
+  /* 【新增】隐藏按钮的样式 */
+  .hide-button {
+    background-color: #555555;
+  }
+
+  .button-text {
+    font-size: 24px; /* 调整字体大小 */
+    color: #ffffff;
+    font-weight: bold;
+  }
+
+  .output-container {
+    width: 90%;
+    height: 100px;
+    background-color: #333333;
+    border-radius: 20px;
+    padding: 15px;
+    flex-direction: column;
+  }
+
+  .output-label {
+    font-size: 18px;
+    color: #999999;
+    margin-bottom: 10px;
+  }
+
+  .output-text {
+    font-size: 24px;
+    color: #ffffff;
+    lines: 2;
+    text-overflow: ellipsis;
+  }
+</style>
+
+<script>
+// src/pages/index/index.js
+export default {
+  data: {
+    // 控制输入法是否隐藏，true 为隐藏
+    isKeyboardHidden: true,
+    // 用于显示输入法返回的内容
+    inputText: ""
+  },
+
+  // 按钮点击事件：显示输入法
+  showKeyboard() {
+    console.log("按钮被点击，准备呼出输入法...");
+    this.isKeyboardHidden = false;
+  },
+
+  // 【新增】按钮点击事件：隐藏输入法
+  hideKeyboard() {
+    console.log("按钮被点击，准备隐藏输入法...");
+    this.isKeyboardHidden = true;
+  },
+
+  // 接收到输入法完成的字符
+  onInputComplete(event) {
+    const content = event.detail.content;
+    console.log("接收到输入内容:", content);
+    this.inputText += content;
+  },
+
+  // 接收到删除事件
+  onInputDelete() {
+    console.log("接收到删除事件");
+    if (this.inputText.length > 0) {
+      this.inputText = this.inputText.slice(0, -1);
+    }
+  },
+}
+
+</script>

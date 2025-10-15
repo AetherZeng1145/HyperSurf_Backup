@@ -1,0 +1,139 @@
+<template>
+  <div class="container">
+    <!-- 1. 顶部栏，采用标准化的居中返回按钮样式 -->
+    <div class="header">
+      <div class="back-button" onclick="goBack">
+        <text class="back-arrow">←</text>
+        <text class="back-text">返回</text>
+      </div>
+      <text class="title">设置</text>
+    </div>
+
+    <!-- 2. 设置选项列表，从顶部栏下方开始 -->
+    <div class="settings-list">
+      <!-- 设置项1: 搜索引擎 -->
+      <div class="setting-item" onclick="goToEngine">
+        <text class="item-text">搜索引擎</text>
+        <div class="item-right">
+          <text class="current-engine">{{currentEngineName}}</text>
+          <text class="item-arrow">›</text>
+        </div>
+      </div>
+
+      <!-- 设置项2: 关于 -->
+      <div class="setting-item" onclick="goToAbout">
+        <text class="item-text">关于</text>
+        <text class="item-arrow">›</text>
+      </div>
+
+      <!-- 设置项3: 捐赠 -->
+      <div class="setting-item" onclick="goToDonate">
+        <text class="item-text">捐赠</text>
+        <text class="item-arrow">›</text>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+/* --- 整体容器与背景 --- */
+.container {
+  width: 466px;
+  height: 466px;
+  /* 规范: 纯黑背景 */
+  background-color: #000000;
+}
+
+/* --- 顶部栏样式 (完全复用协议页的样式) --- */
+.header {
+  width: 466px;
+  height: 100px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  border-bottom: 1px solid #333333;
+}
+
+.back-button {
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #333333;
+  border-radius: 20px;
+  margin-bottom: 8px; 
+}
+
+.back-arrow {
+  font-size: 18px;
+  color: #FFFFFF;
+  margin-right: 6px;
+}
+
+.back-text {
+  font-size: 16px;
+  color: #FFFFFF;
+}
+
+.title {
+  font-size: 24px;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* --- 设置列表样式 --- */
+.settings-list {
+  width: 100%;
+  position: absolute;
+  top: 120px; /* 从顶部栏下方开始 */
+  flex-direction: column;
+  align-items: center; /* 让所有列表项居中 */
+  padding: 20px 0;
+}
+
+/* --- 设置项样式 --- */
+.setting-item {
+  width: 320px; /* 适配圆形屏幕的安全宽度 */
+  height: 70px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 25px;
+  /* 规范: 深灰色胶囊背景 */
+  background-color: #333333;
+  border-radius: 35px; /* 胶囊形状 */
+  margin-bottom: 20px; /* 列表项之间的间距 */
+}
+
+.item-text {
+  font-size: 18px;
+  /* 规范: 白色文字 */
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.item-right {
+  flex-direction: row;
+  align-items: center;
+}
+
+.current-engine {
+  font-size: 16px;
+  /* 规范: 浅灰色次要文字 */
+  color: #888888;
+  margin-right: 10px;
+}
+
+.item-arrow {
+  font-size: 24px;
+  /* 规范: 浅灰色图标/箭头 */
+  color: #888888;
+}
+</style>
+
+<script>
+import settings from './settings.js'
+export default settings
+</script>
